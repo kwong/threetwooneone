@@ -9,6 +9,7 @@ public class BadNetwork implements Runnable {
 	
 	final private Channel leftIn_, leftOut_, rightIn_, rightOut_;
 	
+	
 	public BadNetwork(Channel leftIn, Channel leftOut, 
 			Channel rightIn, Channel rightOut) {
 		leftIn_ = leftIn;
@@ -21,22 +22,33 @@ public class BadNetwork implements Runnable {
 	// Simulates bad network conditions but randomly sending 
 	final private void simulate(Channel leftIn, Channel leftOut, 
 			Channel rightIn, Channel rightOut) throws InterruptedException {
-		int val = ThreadHelper.getRandom(5);
+		int val = -1;
 		
-		Message recvMsg= leftIn.listen();
-		
-		switch (val) {
-		case 0: // SUCCESS
-		case 1:
-		case 2:
+		while (true) {
+			
+			Message recvMsg= leftIn.listen();
+			
+			if (recvMsg.getType() == Message.Type.TIMEOUT || 
+					recvMsg.getType() == Message.Type.FAILURE) {
+				val = 0;
+			} else {
+				val = ThreadHelper.getRandom(11);
+			}
+			
+			
+			ThreadHelper.threadMessage("BN has "+val);
+			if (val < 9) { // success
+				//ThreadHelper.threadMessage("BN sent "+recvMsg);
 				rightOut.send(recvMsg); // Relay message
-				break;
-		case 3: // FAILURE
+			
+			} else if(val == 9) { // failure
 				leftOut.send(new Message(Message.Type.FAILURE));
-				break;
-		case 4: // TIMEOUT
+			} else { // timeout
+			
+				Thread.sleep(3000);
+				ThreadHelper.threadMessage("TIMEOUT OCCURED!");
 				leftOut.send(new Message(Message.Type.TIMEOUT));
-				break;
+			}
 		}
 	}
 	

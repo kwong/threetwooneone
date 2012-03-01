@@ -22,39 +22,58 @@ public class ATMSystem {
 		
 		
 		/*
-		 * =atmChannelOut==>|---------|==cloudLChannelOut==>
+		 * =atmChannelOut==>|---------|<==cloudLChannelOut==
 		 *    		 		| Bad Net |
-		 * <==atmChannelIn==|---------|<==cloudLChannelIn==
+		 * <==atmChannelIn==|---------|==cloudLChannelIn==>
 		 */
 		
 		Channel cloudLeftChannelIn, cloudLeftChannelOut;
 		cloudLeftChannelIn = new Channel();
 		cloudLeftChannelOut = new Channel();
 		BadNetwork badNetwork1 = new BadNetwork(atmChannelOut, atmChannelIn, cloudLeftChannelOut, cloudLeftChannelIn);
-		Thread network = new Thread(badNetwork1);
+		Thread bnetwork1 = new Thread(badNetwork1);
 		
 		
 		/* 
-		 * =cloudLChannelOut==>|-------|==cloudRChannelOut==>
+		 * =cloudLChannelIn==>|-------|==cloudRChannelOut==>
 		 * 					   | Cloud |
-		 * <==cloudLChannelIn==|-------|<==cloudRChannelIn===
+		 * <==cloudLChannelOut==|-------|<==cloudRChannelIn===
 		 * 
 		 */
 		
 		Channel cloudRightChannelIn, cloudRightChannelOut;
 		cloudRightChannelIn = new Channel();
 		cloudRightChannelOut = new Channel();
-		Thread cloud = new Thread(new Cloud(cloudLeftChannelOut, cloudLeftChannelIn, cloudRightChannelOut, cloudRightChannelIn));
+		Thread cloud = new Thread(new Cloud(cloudLeftChannelIn, cloudLeftChannelOut, cloudRightChannelIn, cloudRightChannelOut));
 			
 		
+		/*
+		 * =cloudRChannelOut==>|---------|<==dbLChannelOut==
+		 *    		 		   | Bad Net |
+		 * <==cloudRChannelIn==|---------|==dbLChannelIn==>
+		 */
+		Channel dbLeftChannelOut, dbLeftChannelIn;
+		dbLeftChannelIn = new Channel();
+		dbLeftChannelOut = new Channel();
+		BadNetwork badNetwork2 = new BadNetwork(cloudRightChannelOut, cloudRightChannelIn, dbLeftChannelOut, dbLeftChannelIn);
+		Thread bnetwork2 = new Thread(badNetwork2);
+		
+		/*
+		 * <=dbLChannelOut==|----|
+		 *    				| DB |
+		 *  ==dbLChannelIn=>|----|
+		 */
+		
+		Thread database = new Thread(new Database(dbLeftChannelIn, dbLeftChannelOut));
+		
 		/*** Start System ***/
-		atm.start();
-		network.start();
+		
+		bnetwork1.start();
+		bnetwork2.start();
+		database.start();
 		cloud.start();
+		atm.start();
 		
-		
-		
-		
-		
+				
 	}
 }

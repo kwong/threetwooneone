@@ -1,17 +1,20 @@
 public class Channel {
 
-	Message msg = null;
+	private Message msg_ = null;
 
 	public synchronized void send(Message v) throws InterruptedException {
-		msg  = v;
+		//ThreadHelper.threadMessage("Wrote message: " + v);
+		Thread.sleep(1000);
+		msg_ = v;
 		notifyAll();
 	}
 	
+	// Busy waits when there's nothing on the channel 
 	public synchronized Message listen() throws InterruptedException{
-		while (msg == null) wait();
-		Message temp = msg;
-		msg = null;
-		//ThreadHelper.threadMessage("Channel has message: " + temp);
+		while (msg_ == null) wait();
+		Message temp = msg_;
+		msg_ = null;
+		//ThreadHelper.threadMessage("Read message: " + temp);
 		return temp;
 	}
 	

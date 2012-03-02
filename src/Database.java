@@ -38,13 +38,22 @@ public class Database implements Runnable {
 
 
 						break;
-					case RETRIEVEBALANCE:
+					case WITHDRAW:
 
 						ThreadHelper.threadMessage("DB: Received WITHDRAW request from Cloud");
 						Message withOKMsg = new Message(Message.Type.WITHDRAWOK);
 						ThreadHelper.threadMessage("DB: Confirming Withdrawal, sending WITHDRAWOK");
 						lastMsgSentOnLeft_ = withOKMsg;
 						leftOut_.send(withOKMsg);					
+
+						break;
+					case RETRIEVERECORD:
+
+						ThreadHelper.threadMessage("DB: Received RETRIEVERECORD request from Cloud");
+						Message retrieveOKMsg = new Message(Message.Type.RETRIEVERECORDOK);
+						ThreadHelper.threadMessage("DB: Confirming RETRIEVERECORD, sending WITHDRAWOK");
+						lastMsgSentOnLeft_ = retrieveOKMsg;
+						leftOut_.send(retrieveOKMsg);					
 
 						break;
 					case TIMEOUT: 

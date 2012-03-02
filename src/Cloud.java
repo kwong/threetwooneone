@@ -43,17 +43,15 @@ public class Cloud implements Runnable {
 					case WITHDRAW:
 						ThreadHelper.threadMessage("Cloud: Received WITHDRAW request from ATM");
 						ThreadHelper.threadMessage("Cloud: Requesting Balance from DB");
-						Message withMsg = new Message(Message.Type.RETRIEVEBALANCE);
+						Message withMsg = new Message(Message.Type.RETRIEVERECORD);
 						
 						lastMsgSentOnRight_ = withMsg;
 						rightOut_.send(withMsg);
-						
 						break;
 					case TIMEOUT: 
 						ThreadHelper.threadMessage("CLOUD: Network Timeout when sending message to ATM");
 						ThreadHelper.threadMessage("CLOUD: Relay Timeout to DB");
 						rightOut_.send(l_in); // relay
-			
 						break;
 					case FAILURE:
 						ThreadHelper.threadMessage("Cloud: Failure -- resending last request :" + lastMsgSentOnLeft_);
@@ -96,6 +94,12 @@ public class Cloud implements Runnable {
 						leftOut_.send(r_in); // relay						
 						
 						
+						break;
+					case RETRIEVERECORDOK:
+						ThreadHelper.threadMessage("CLOUD: RECORD RECEIVED OK!");
+						ThreadHelper.threadMessage("CLOUD: Sending withdraw request");
+						lastMsgSentOnRight_ = new Message(Message.Type.WITHDRAW);
+						rightOut_.send(lastMsgSentOnRight_); // relay		
 						break;
 					case TIMEOUT: 
 						ThreadHelper.threadMessage("CLOUD: Network Timeout");

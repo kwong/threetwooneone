@@ -1,9 +1,16 @@
 
 public class Message {
 	final Type msg_;
+	final int user_;
+	
+	public Message(Type msg, int user) {
+		msg_ = msg;
+		user_ = user;
+	}
 	
 	public Message(Type msg) {
 		msg_ = msg;
+		user_ = 1;
 	}
 	
 	public Type getType() {
@@ -31,6 +38,11 @@ public class Message {
 		RETRIEVEBALANCEOK,
 		RETRIEVEBALANCEFAILURE,
 		RETRIEVEBALANCETIMEOUT,
+		RETRIEVERECORD,
+		RETRIEVERECORDOK,
+		SETBALANCE,
+		SETBALANCEOK,
+		RECORD,
 		FAILURE,
 		TIMEOUT,
 		

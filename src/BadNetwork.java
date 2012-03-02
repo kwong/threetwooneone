@@ -36,7 +36,7 @@ public class BadNetwork implements Runnable {
 			}
 
 
-			ThreadHelper.threadMessage("BN has "+val);
+			//ThreadHelper.threadMessage("BN has "+val);
 			if (val < 9) { // success
 				//ThreadHelper.threadMessage("BN sent "+recvMsg);
 				rightOut.send(recvMsg); // Relay message

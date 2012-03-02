@@ -31,7 +31,7 @@ public class ATMMachine implements Runnable, Identification{
 		while (i < authInfo.length)
 			try {
 				ThreadHelper.threadMessage(authInfo[i++], getId());
-				Thread.sleep(500);
+				
 			} catch (InterruptedException e1) {}
 
 

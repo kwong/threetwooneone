@@ -22,7 +22,7 @@ public class BadNetwork implements Runnable {
 	// Simulates bad network conditions but randomly sending 
 	final private void simulate(Channel leftIn, Channel leftOut, 
 			Channel rightIn, Channel rightOut) throws InterruptedException {
-		int val = -1;
+		int val;
 
 		while (true) {
 
@@ -32,20 +32,20 @@ public class BadNetwork implements Runnable {
 					recvMsg.getType() == Message.Type.FAILURE) {
 				val = 0;
 			} else {
-				val = ThreadHelper.getRandom(1);
+				val = ThreadHelper.getRandom(Config.fairnessFactor + 2);
 			}
 
 
 			//ThreadHelper.threadMessage("BN has "+val);
-			if (val < 9) { // success
-				//ThreadHelper.threadMessage("BN sent "+recvMsg);
+			
+			if (val < Config.fairnessFactor || Config.fairnessFactor == 0) { // success
 				rightOut.send(recvMsg); // Relay message
-
-			} else if(val == 9) { // failure
+				
+			} else if(val == Config.fairnessFactor) { // failure
 				leftOut.send(new Message(Message.Type.FAILURE));
 			} else { // timeout
 
-				Thread.sleep(3000);
+				Thread.sleep(1000);
 				ThreadHelper.threadMessage("TIMEOUT OCCURED!");
 				leftOut.send(new Message(Message.Type.TIMEOUT));
 			}
@@ -58,7 +58,7 @@ public class BadNetwork implements Runnable {
 		public void run() {
 
 			try {
-				ThreadHelper.threadMessage("Network listening from ATM");
+				//ThreadHelper.threadMessage("Network listening from ATM");
 				simulate(leftIn_, leftOut_, rightIn_, rightOut_);
 			} catch (InterruptedException e1) {}
 		}

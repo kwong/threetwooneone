@@ -20,7 +20,7 @@ public class ModelConstructor {
 	final private void constructATM() {	
 		int userId = -1;
 		for (int i=0; i<numATM_; i++){
-			switch (Configuration.populationType){
+			switch (Config.populationType){
 			case 0: 
 				userId = i;
 				break;

@@ -11,7 +11,7 @@ public class ATMSystem {
 		
 	
 		
-		/*		|-----|==atmChannelOut=>
+		/*      |-----|==atmChannelOut=>
 		 *      | ATM |  
 		 *      |-----|<=atomChannelIn==
 		 */
@@ -23,7 +23,7 @@ public class ATMSystem {
 		
 		/*
 		 * =atmChannelOut==>|---------|<==cloudLChannelOut==
-		 *    		 		| Bad Net |
+		 *                  | Bad Net |
 		 * <==atmChannelIn==|---------|==cloudLChannelIn==>
 		 */
 		
@@ -35,8 +35,8 @@ public class ATMSystem {
 		
 		
 		/* 
-		 * =cloudLChannelIn==>|-------|==cloudRChannelOut==>
-		 * 					   | Cloud |
+		 *   =cloudLChannelIn==>|-------|==cloudRChannelOut==>
+		 *                      | Cloud |
 		 * <==cloudLChannelOut==|-------|<==cloudRChannelIn===
 		 * 
 		 */
@@ -49,7 +49,7 @@ public class ATMSystem {
 		
 		/*
 		 * =cloudRChannelOut==>|---------|<==dbLChannelOut==
-		 *    		 		   | Bad Net |
+		 *                     | Bad Net |
 		 * <==cloudRChannelIn==|---------|==dbLChannelIn==>
 		 */
 		Channel dbLeftChannelOut, dbLeftChannelIn;
@@ -60,7 +60,7 @@ public class ATMSystem {
 		
 		/*
 		 * <=dbLChannelOut==|----|
-		 *    				| DB |
+		 *                  | DB |
 		 *  ==dbLChannelIn=>|----|
 		 */
 		

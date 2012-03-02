@@ -1,7 +1,7 @@
 
 /* 
  * =cloudLChannelOut==>|-------|==cloudRChannelOut==>
- * 					   | Cloud |
+ *                     | Cloud |
  * <==cloudLChannelIn==|-------|<==cloudRChannelIn===
  * 
  */
@@ -27,7 +27,7 @@ public class Cloud implements Runnable {
 				while (true) {
 					
 					Message l_in = leftIn_.listen();
-					ThreadHelper.threadMessage("Cloud: Listening for ATM messages");
+					//ThreadHelper.threadMessage("Cloud: Listening for ATM messages");
 					//ThreadHelper.threadMessage(""+l_in);
 					switch (l_in.getType()) {
 					case AUTH:
@@ -75,9 +75,9 @@ public class Cloud implements Runnable {
 		public synchronized void run() {
 			try {
 				while (true) {
-					ThreadHelper.threadMessage("Cloud: Listening for DB messages");
+					//ThreadHelper.threadMessage("Cloud: Listening for DB messages");
 					Message r_in = rightIn_.listen();
-					ThreadHelper.threadMessage("Cloud: Listened for DB messages");
+					//ThreadHelper.threadMessage("Cloud: Listened for DB messages");
 					switch (r_in.getType()) {
 					case GETPINOK:
 						ThreadHelper.threadMessage("CLOUD: User has been Verified!");

@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 
 
 /* 
@@ -8,17 +10,27 @@
  */
 
 public class Database implements Runnable {
-	final private Channel leftIn_, leftOut_;
+	
+	private ArrayList<Interface> interfaces = new ArrayList<Interface>();
 
-
-	private Message lastMsgSentOnLeft_;
-
-	public Database(Channel leftIn, Channel leftOut) {
+	
+	
+	/*public Database(Channel leftIn, Channel leftOut) {
 		leftIn_ = leftIn;
 		leftOut_ = leftOut;
 	}
-
-	private class LeftInterface implements Runnable {
+*/
+	public void connectDB(Channel leftIn, Channel leftOut) {
+		interfaces.add(new Interface(leftIn, leftOut));
+	}
+	
+	private class Interface implements Runnable {
+		final private Channel leftIn_, leftOut_;
+		private Message lastMsgSentOnLeft_;
+		public Interface(Channel leftIn, Channel leftOut) {
+			leftIn_ = leftIn;
+			leftOut_ = leftOut;
+		}
 		@Override
 		public synchronized void run() {
 			try {
@@ -81,8 +93,13 @@ public class Database implements Runnable {
 
 	@Override
 	public void run() {
-		Thread leftInterface = new Thread(new LeftInterface());
-		leftInterface.start();
+		//Thread leftInterface = new Thread(new Interface());
+		//leftInterface.start();
+		for (Interface inter : interfaces) {
+			Thread t = new Thread(inter);
+			t.start();
+		}
+			
 	}
 
 }

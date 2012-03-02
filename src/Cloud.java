@@ -6,18 +6,21 @@
  * 
  */
 
-public class Cloud implements Runnable {
-	final private Channel leftIn_, leftOut_, rightIn_, rightOut_;
+public class Cloud implements Runnable,Identification {
+	final public Channel leftIn, leftOut, rightIn, rightOut;
 		
 	private Message lastMsgSentOnLeft_, lastMsgSentOnRight_;
+	private int id ;
+	final private String name;
 	
-	
-	public Cloud(Channel leftIn, Channel leftOut,
+	public Cloud(int id, Channel leftIn, Channel leftOut,
 			Channel rightIn, Channel rightOut) {
-		this.leftIn_ = leftIn;
-		this.leftOut_ = leftOut;
-		this.rightIn_ = rightIn;
-		this.rightOut_ = rightOut;
+		this.id = id;
+		this.leftIn = leftIn;
+		this.leftOut = leftOut;
+		this.rightIn = rightIn;
+		this.rightOut = rightOut;
+		name = this.getId();
 	}
 	
 	private class LeftInterface implements Runnable {
@@ -26,37 +29,37 @@ public class Cloud implements Runnable {
 			try {
 				while (true) {
 					
-					Message l_in = leftIn_.listen();
+					Message l_in = leftIn.listen();
 					//ThreadHelper.threadMessage("Cloud: Listening for ATM messages");
 					//ThreadHelper.threadMessage(""+l_in);
 					switch (l_in.getType()) {
 					case AUTH:
-						ThreadHelper.threadMessage("Cloud: Received AUTH request from ATM");
+						ThreadHelper.threadMessage("Received AUTH request from ATM", name);
 						Message authMsg = new Message(Message.Type.GETPIN);
-						ThreadHelper.threadMessage("Cloud: Requesting PIN from DB");
-						ThreadHelper.threadMessage("Cloud: Sending PIN Request over network");
+						ThreadHelper.threadMessage("Requesting PIN from DB", name);
+						ThreadHelper.threadMessage("Sending PIN Request over network", name);
 						lastMsgSentOnRight_ = authMsg; 
-						rightOut_.send(authMsg);
+						rightOut.send(authMsg);
 						
 						
 						break;
 					case WITHDRAW:
-						ThreadHelper.threadMessage("Cloud: Received WITHDRAW request from ATM");
-						ThreadHelper.threadMessage("Cloud: Requesting Balance from DB");
+						ThreadHelper.threadMessage("Received WITHDRAW request from ATM", name);
+						ThreadHelper.threadMessage("Requesting Balance from DB", name);
 						Message withMsg = new Message(Message.Type.RETRIEVERECORD);
 						
 						lastMsgSentOnRight_ = withMsg;
-						rightOut_.send(withMsg);
+						rightOut.send(withMsg);
 						break;
 					case TIMEOUT: 
-						ThreadHelper.threadMessage("CLOUD: Network Timeout when sending message to ATM");
-						ThreadHelper.threadMessage("CLOUD: Relay Timeout to DB");
-						rightOut_.send(l_in); // relay
+						ThreadHelper.threadMessage("Network Timeout when sending message to ATM", name);
+						ThreadHelper.threadMessage("Relay Timeout to DB", name);
+						rightOut.send(l_in); // relay
 						break;
 					case FAILURE:
-						ThreadHelper.threadMessage("Cloud: Failure -- resending last request :" + lastMsgSentOnLeft_);
-						ThreadHelper.threadMessage("Cloud: Resending");
-						leftOut_.send(lastMsgSentOnLeft_);
+						ThreadHelper.threadMessage("Failure -- resending last request :" + lastMsgSentOnLeft_, name);
+						ThreadHelper.threadMessage("Resending", name);
+						leftOut.send(lastMsgSentOnLeft_);
 						break;
 					}
 				}
@@ -74,45 +77,45 @@ public class Cloud implements Runnable {
 			try {
 				while (true) {
 					//ThreadHelper.threadMessage("Cloud: Listening for DB messages");
-					Message r_in = rightIn_.listen();
+					Message r_in = rightIn.listen();
 					//ThreadHelper.threadMessage("Cloud: Listened for DB messages");
 					switch (r_in.getType()) {
 					case GETPINOK:
-						ThreadHelper.threadMessage("CLOUD: User has been Verified!");
-						ThreadHelper.threadMessage("CLOUD: Notifying ATM that we are verified");
+						ThreadHelper.threadMessage("User has been Verified!", name);
+						ThreadHelper.threadMessage("Notifying ATM that we are verified", name);
 						Message authOKMsg = new Message(Message.Type.AUTHOK);
 						lastMsgSentOnLeft_ = authOKMsg; 
-						leftOut_.send(authOKMsg); // relay
+						leftOut.send(authOKMsg); // relay
 						
 						
 						
 						break;
 					case WITHDRAWOK:
-						ThreadHelper.threadMessage("CLOUD: Withdraw OK!");
-						ThreadHelper.threadMessage("CLOUD: Notifying ATM that we have successfully withdrawn");
+						ThreadHelper.threadMessage("Withdraw OK!", name);
+						ThreadHelper.threadMessage("Notifying ATM that we have successfully withdrawn", name);
 						lastMsgSentOnLeft_ = r_in;
-						leftOut_.send(r_in); // relay						
+						leftOut.send(r_in); // relay						
 						
 						
 						break;
 					case RETRIEVERECORDOK:
-						ThreadHelper.threadMessage("CLOUD: RECORD RECEIVED OK!");
-						ThreadHelper.threadMessage("CLOUD: Sending withdraw request");
+						ThreadHelper.threadMessage("RECORD RECEIVED OK!", name);
+						ThreadHelper.threadMessage("Sending withdraw request", name);
 						lastMsgSentOnRight_ = new Message(Message.Type.WITHDRAW);
-						rightOut_.send(lastMsgSentOnRight_); // relay		
+						rightOut.send(lastMsgSentOnRight_); // relay		
 						break;
 					case TIMEOUT: 
-						ThreadHelper.threadMessage("CLOUD: Network Timeout");
-						ThreadHelper.threadMessage("CLOUD: Relaying Timeout To ATM!" + r_in);
+						ThreadHelper.threadMessage("Network Timeout", name);
+						ThreadHelper.threadMessage("Relaying Timeout To ATM!" + r_in, name);
 						lastMsgSentOnLeft_ = r_in;
-						leftOut_.send(r_in); // relay
+						leftOut.send(r_in); // relay
 						
 						
 						break;
 					case FAILURE:
 						// Do we resend timeout?!
-						ThreadHelper.threadMessage("CLOUD: Last message failed, resending " + lastMsgSentOnRight_);
-						rightOut_.send(lastMsgSentOnRight_);
+						ThreadHelper.threadMessage("Last message failed, resending " + lastMsgSentOnRight_, name);
+						rightOut.send(lastMsgSentOnRight_);
 						break;
 					}
 				}
@@ -131,6 +134,16 @@ public class Cloud implements Runnable {
 		Thread rightInterface = new Thread(new RightInterface());
 		leftInterface.start();
 		rightInterface.start();
+	}
+	
+	@Override
+	public String getId() {
+		StringBuffer sb = new StringBuffer();
+		for(int i = 0; i< id+1; i++)
+			sb.append("\t\t\t\t\t");
+		sb.append("Cloud");
+		sb.append(id);
+		return sb.toString();
 	}
 	
 	

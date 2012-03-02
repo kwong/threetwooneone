@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.concurrent.Semaphore;
 
 
 
@@ -10,20 +12,23 @@ import java.util.ArrayList;
  */
 
 public class Database implements Runnable {
-	
-	private ArrayList<Interface> interfaces = new ArrayList<Interface>();
 
-	
-	
-	/*public Database(Channel leftIn, Channel leftOut) {
-		leftIn_ = leftIn;
-		leftOut_ = leftOut;
+	private ArrayList<Interface> interfaces = new ArrayList<Interface>();
+	private BitSet readingRecord = new BitSet();
+	private final Semaphore mutex = new Semaphore(1, true);
+/*
+	public Database() {
+		numATM_ = numATM;
 	}
 */
 	public void connectDB(Channel leftIn, Channel leftOut) {
 		interfaces.add(new Interface(leftIn, leftOut));
 	}
 	
+	private synchronized void flipBit(int n) {
+		readingRecord.flip(n);
+	}
+
 	private class Interface implements Runnable {
 		final private Channel leftIn_, leftOut_;
 		private Message lastMsgSentOnLeft_;
@@ -32,7 +37,7 @@ public class Database implements Runnable {
 			leftOut_ = leftOut;
 		}
 		@Override
-		public synchronized void run() {
+		public void run() {
 			try {
 				while (true) {
 
@@ -42,7 +47,7 @@ public class Database implements Runnable {
 					switch (l_in.getType()) {
 					case GETPIN:
 						ThreadHelper.threadMessage("DB: Received GETPIN request from Cloud");
-						Message pinOKMsg = new Message(Message.Type.GETPINOK);
+						Message pinOKMsg = new Message(Message.Type.GETPINOK, l_in.user_);
 						ThreadHelper.threadMessage("DB: Replying Cloud with PIN");
 						lastMsgSentOnLeft_ = pinOKMsg;
 						ThreadHelper.threadMessage("DB: Sending PIN over network");
@@ -53,16 +58,23 @@ public class Database implements Runnable {
 					case WITHDRAW:
 
 						ThreadHelper.threadMessage("DB: Received WITHDRAW request from Cloud");
-						Message withOKMsg = new Message(Message.Type.WITHDRAWOK);
+						Message withOKMsg = new Message(Message.Type.WITHDRAWOK, l_in.user_);
+						readingRecord.clear(l_in.user_);
 						ThreadHelper.threadMessage("DB: Confirming Withdrawal, sending WITHDRAWOK");
 						lastMsgSentOnLeft_ = withOKMsg;
 						leftOut_.send(withOKMsg);					
 
 						break;
 					case RETRIEVERECORD:
-
+						mutex.acquire();
+						if (readingRecord.get(l_in.user_) == false) {
+							flipBit(l_in.user_);
+						} else {
+							ThreadHelper.threadMessage("DB: !!! Another user with the same id <"+ l_in.user_ + "> trying to fetch its record");
+						}
+						mutex.release();
 						ThreadHelper.threadMessage("DB: Received RETRIEVERECORD request from Cloud");
-						Message retrieveOKMsg = new Message(Message.Type.RETRIEVERECORDOK);
+						Message retrieveOKMsg = new Message(Message.Type.RETRIEVERECORDOK, l_in.user_);
 						ThreadHelper.threadMessage("DB: Confirming RETRIEVERECORD, sending WITHDRAWOK");
 						lastMsgSentOnLeft_ = retrieveOKMsg;
 						leftOut_.send(retrieveOKMsg);					
@@ -99,7 +111,7 @@ public class Database implements Runnable {
 			Thread t = new Thread(inter);
 			t.start();
 		}
-			
+
 	}
 
 }

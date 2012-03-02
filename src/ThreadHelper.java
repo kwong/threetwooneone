@@ -13,7 +13,7 @@ public class ThreadHelper {
 	
 	public static void threadMessage(String message) throws InterruptedException {
 		//Thread.sleep(1000);
-		String threadName = Thread.currentThread().getName();
+		//String threadName = Thread.currentThread().getName();
 		System.out.format("%s\n", message);
 	}
 	

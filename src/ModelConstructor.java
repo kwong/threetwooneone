@@ -3,22 +3,35 @@ import java.util.ArrayList;
 
 public class ModelConstructor {
 
-	final private int numATM_, numUsers_;
+	final private int numATM_;
 	private ArrayList<ATMMachine> atmMachines = new ArrayList<ATMMachine>();
 	private ArrayList<Cloud> cloudProcessors = new ArrayList<Cloud>();
 	private ArrayList<BadNetwork> badNetworks1 =  new ArrayList<BadNetwork>();
 	private ArrayList<BadNetwork> badNetworks2 = new ArrayList<BadNetwork>();
 		
-	private Database db = new Database();
+	private Database db ;
 	
-	public ModelConstructor(int numATM, int numUsers) {
+	public ModelConstructor(int numATM) {
 		numATM_ = numATM;
-		numUsers_ = numUsers;
+		db = new Database();
+		//numUsers_ = numUsers;
 	}
 	
 	final private void constructATM() {	
+		int userId = -1;
 		for (int i=0; i<numATM_; i++){
-			atmMachines.add(new ATMMachine(i, new Channel(), new Channel())); 
+			switch (Configuration.populationType){
+			case 0: 
+				userId = i;
+				break;
+			case 1:
+				userId = ThreadHelper.getRandom(numATM_+1);
+				break;
+			case 2:
+				userId = 0;
+				break;
+			}
+			atmMachines.add(new ATMMachine(i, userId, new Channel(), new Channel())); 
 		}
 	}
 	

@@ -9,6 +9,8 @@ public class ATMSystem {
 
 	public static void main(String args[]) throws InterruptedException {
 		
+		ModelConstructor mc = new ModelConstructor(2);
+		mc.startSimulation();
 	
 		
 		/*      |-----|==atmChannelOut=>
@@ -74,9 +76,6 @@ public class ATMSystem {
 		cloud.start();
 		atm.start();
 		*/
-		
-		ModelConstructor mc = new ModelConstructor(2, 1);
-		mc.startSimulation();
 				
 	}
 }

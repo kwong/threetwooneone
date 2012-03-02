@@ -5,11 +5,12 @@
 
 public class ATMMachine implements Runnable, Identification{
 	final public Channel rightIn, rightOut;
-	final public int id;
+	final private int id, user;
 	private Message lastMsgSentOnRight_, r_in;
 
-	public ATMMachine(int id, Channel in, Channel out) {
-		this.id= id;
+	public ATMMachine(int id, int user, Channel in, Channel out) {
+		this.id = id;
+		this.user = user;
 		this.rightIn = in;
 		this.rightOut = out;
 	}
@@ -30,11 +31,12 @@ public class ATMMachine implements Runnable, Identification{
 		while (i < authInfo.length)
 			try {
 				ThreadHelper.threadMessage(authInfo[i++], getId());
+				Thread.sleep(500);
 			} catch (InterruptedException e1) {}
 
 
 		try {
-			Message authMsg = new Message(Message.Type.AUTH);
+			Message authMsg = new Message(Message.Type.AUTH, user);
 			ThreadHelper.threadMessage("Sending Authentication Request", getId());
 			lastMsgSentOnRight_ = authMsg; 
 			rightOut.send(authMsg);
@@ -48,7 +50,7 @@ public class ATMMachine implements Runnable, Identification{
 				case AUTHOK:
 					ThreadHelper.threadMessage("User has been authenticated");
 					ThreadHelper.threadMessage("Sending withdrawal request");
-					Message withMsg = new Message(Message.Type.WITHDRAW);
+					Message withMsg = new Message(Message.Type.WITHDRAW, user);
 					lastMsgSentOnRight_ = withMsg;
 					rightOut.send(withMsg);
 
@@ -88,6 +90,8 @@ public class ATMMachine implements Runnable, Identification{
 			sb.append("\t\t\t\t\t");
 		sb.append("ATM");
 		sb.append(id);
+		sb.append(",");
+		sb.append(user);
 		return sb.toString();
 	}
 }

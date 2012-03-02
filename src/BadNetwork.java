@@ -32,7 +32,7 @@ public class BadNetwork implements Runnable {
 					recvMsg.getType() == Message.Type.FAILURE) {
 				val = 0;
 			} else {
-				val = ThreadHelper.getRandom(11);
+				val = ThreadHelper.getRandom(1);
 			}
 
 

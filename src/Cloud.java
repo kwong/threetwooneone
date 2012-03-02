@@ -35,7 +35,7 @@ public class Cloud implements Runnable,Identification {
 					switch (l_in.getType()) {
 					case AUTH:
 						ThreadHelper.threadMessage("Received AUTH request from ATM", name);
-						Message authMsg = new Message(Message.Type.GETPIN);
+						Message authMsg = new Message(Message.Type.GETPIN, l_in.user_);
 						ThreadHelper.threadMessage("Requesting PIN from DB", name);
 						ThreadHelper.threadMessage("Sending PIN Request over network", name);
 						lastMsgSentOnRight_ = authMsg; 
@@ -46,7 +46,7 @@ public class Cloud implements Runnable,Identification {
 					case WITHDRAW:
 						ThreadHelper.threadMessage("Received WITHDRAW request from ATM", name);
 						ThreadHelper.threadMessage("Requesting Balance from DB", name);
-						Message withMsg = new Message(Message.Type.RETRIEVERECORD);
+						Message withMsg = new Message(Message.Type.RETRIEVERECORD, l_in.user_);
 						
 						lastMsgSentOnRight_ = withMsg;
 						rightOut.send(withMsg);
@@ -101,7 +101,7 @@ public class Cloud implements Runnable,Identification {
 					case RETRIEVERECORDOK:
 						ThreadHelper.threadMessage("RECORD RECEIVED OK!", name);
 						ThreadHelper.threadMessage("Sending withdraw request", name);
-						lastMsgSentOnRight_ = new Message(Message.Type.WITHDRAW);
+						lastMsgSentOnRight_ = new Message(Message.Type.WITHDRAW, r_in.user_);
 						rightOut.send(lastMsgSentOnRight_); // relay		
 						break;
 					case TIMEOUT: 

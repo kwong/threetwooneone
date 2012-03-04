@@ -18,8 +18,7 @@ public class ATMMachine implements Runnable, Identification{
 	@Override
 	public void run() {
 
-		//atmstart:
-		//while (true) {
+
 		String authInfo[] = {
 				"Insert Card",
 				"Enter pin",

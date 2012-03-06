@@ -1,6 +1,23 @@
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 // ATMSystem
 
@@ -13,82 +30,132 @@ public class ATMSystem {
 
 	
 	private static BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-	private static int numATMs;
+	private static int numATMs = 1;
+	private static JFrame frame;
+	private static JPanel mainPane;
+	
+	private static ModelConstructor mc;
+	
+	private static void init() {
+		frame = new JFrame("CS3211 Group 5 - ATM Simulation");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		frame.setVisible(true);
+		frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);
+            }
+        });
+	}
+	
+	private static void createSimulationGUI() throws InterruptedException {
+				
+		mainPane = new JPanel();
+		JPanel atmPane = new JPanel();
+		JPanel net1Pane = new JPanel();
+		JPanel cloudPane = new JPanel();
+		JPanel net2Pane = new JPanel();
+		JPanel dbPane = new JPanel();
+		
+		
+		
+		mainPane.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+		mainPane.setLayout(new GridLayout(5,1));
+		atmPane.setLayout(new GridLayout(1,2,-2,-2));
+		net1Pane.setLayout(new GridLayout(1,5,-2,-2));
+		cloudPane.setLayout(new GridLayout(1,5,-2,-2));
+		net2Pane.setLayout(new GridLayout(1,5,-2,-2));
+		dbPane.setLayout(new GridLayout(1,1,2,2));
+		//dbPane.setPreferredSize(Config.DB_SIZE);	
+		//dbPane.setPreferredSize(Config.DB_SIZE);
+		
+		
+		for(ATMMachine atm: mc.atmMachines)
+			atmPane.add(atm);
+			
+		for(BadNetwork bn: mc.badNetworks1)
+			net1Pane.add(bn);
+		
+		for(Cloud cloud: mc.cloudProcessors)
+			cloudPane.add(cloud);
+		
+		for(BadNetwork bn: mc.badNetworks2)
+			net2Pane.add(bn);
+		
+		
+		dbPane.add(mc.db);
+		mainPane.add(atmPane);
+		mainPane.add(net1Pane);
+		mainPane.add(cloudPane);
+		mainPane.add(net2Pane);
+		mainPane.add(dbPane);
+		
+		
+	}
+	
+	public static void createConfigPane() {
+		/* Option Pane */
+		JPanel optionPane = new JPanel();
+		JButton confirmBtn = new JButton("Create");
+		JLabel optionLbl = new JLabel("Select number of ATMs");
+		SpinnerModel model = new SpinnerNumberModel (1, 1, 10, 1);
+		final JSpinner spinner= new JSpinner(model);
+		
+		optionPane.add(optionLbl);
+		optionPane.add(spinner);
+		optionPane.add(confirmBtn);
+		
+		
+		 ChangeListener listener = new ChangeListener() {
+             public void stateChanged(ChangeEvent e) {
+                numATMs = (Integer) spinner.getValue();
+             }
+          };
+          spinner.addChangeListener(listener);
+          
+          
+        frame.setContentPane(optionPane);
+        frame.pack();
+        frame.setVisible(true);
+        
+        
+        confirmBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					mc = (new ModelConstructor(numATMs));
+					mc.startSimulation(); 
+					createSimulationGUI();
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} catch (IOException ioe) {
+					// TODO Auto-generated catch block
+					ioe.printStackTrace();
+				}
+				frame.setPreferredSize(new Dimension(numATMs*240, 600));
+				frame.setContentPane(mainPane);
+				frame.pack();        //Resizes the window to its natural size.
+			    frame.setVisible(true);
+			}
+		});
+	}
+	
 	
 	public static void main(String args[]) throws InterruptedException {
-		requestConfig();
-		ModelConstructor mc = new ModelConstructor(numATMs);
+		//requestConfig();
 		
-		System.out.println("SIMULATION STARTED:");
-		mc.startSimulation();
-	
+		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				init();
+				createConfigPane();
+				System.out.println("SIMULATION STARTED:");
+			}
+		});
 		
-		/*      |-----|==atmChannelOut=>
-		 *      | ATM |  
-		 *      |-----|<=atomChannelIn==
-		 */
-	/*	Channel atmChannelIn, atmChannelOut;
-		atmChannelIn = new Channel();
-		atmChannelOut = new Channel();
-		Thread atm = new Thread(new ATMMachine(0, atmChannelIn, atmChannelOut));
-		
-	*/	
-		/*
-		 * =atmChannelOut==>|---------|<==cloudLChannelOut==
-		 *                  | Bad Net |
-		 * <==atmChannelIn==|---------|==cloudLChannelIn==>
-		 */
-		
-		/*Channel cloudLeftChannelIn, cloudLeftChannelOut;
-		cloudLeftChannelIn = new Channel();
-		cloudLeftChannelOut = new Channel();
-		BadNetwork badNetwork1 = new BadNetwork(atmChannelOut, atmChannelIn, cloudLeftChannelOut, cloudLeftChannelIn);
-		Thread bnetwork1 = new Thread(badNetwork1);
-		*/
-		
-		/* 
-		 *   =cloudLChannelIn==>|-------|==cloudRChannelOut==>
-		 *                      | Cloud |
-		 * <==cloudLChannelOut==|-------|<==cloudRChannelIn===
-		 * 
-		 */
-		/*
-		Channel cloudRightChannelIn, cloudRightChannelOut;
-		cloudRightChannelIn = new Channel();
-		cloudRightChannelOut = new Channel();
-		Thread cloud = new Thread(new Cloud(cloudLeftChannelIn, cloudLeftChannelOut, cloudRightChannelIn, cloudRightChannelOut));
-		*/	
-		
-		/*
-		 * =cloudRChannelOut==>|---------|<==dbLChannelOut==
-		 *                     | Bad Net |
-		 * <==cloudRChannelIn==|---------|==dbLChannelIn==>
-		 */
-		/*Channel dbLeftChannelOut, dbLeftChannelIn;
-		dbLeftChannelIn = new Channel();
-		dbLeftChannelOut = new Channel();
-		BadNetwork badNetwork2 = new BadNetwork(cloudRightChannelOut, cloudRightChannelIn, dbLeftChannelOut, dbLeftChannelIn);
-		Thread bnetwork2 = new Thread(badNetwork2);
-		*/
-		/*
-		 * <=dbLChannelOut==|----|
-		 *                  | DB |
-		 *  ==dbLChannelIn=>|----|
-		 */
-		
-		//Thread database = new Thread(new Database(dbLeftChannelIn, dbLeftChannelOut));
-		
-		/*** Start System ***/
-		/*
-		bnetwork1.start();
-		bnetwork2.start();
-		database.start();
-		cloud.start();
-		atm.start();
-		*/
 				
 	}
 	
+	/*
 	private static int readInput(BufferedReader input) {
 		System.out.print("  > ");
         
@@ -119,6 +186,6 @@ public class ATMSystem {
 				"      2 for non-unique users (all atm with the same users)\n");
 		Config.populationType = readInput(input);
 		
-	}
+	}*/
 	
 }

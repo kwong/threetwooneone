@@ -1,3 +1,5 @@
+import java.awt.Dimension;
+
 
 public class Config {
 		
@@ -11,7 +13,13 @@ public class Config {
 	public static int delay = 1000;
 	
 	
+						/* CONSTANTS */
 	
+	
+	// Size of Panels
+	final public static Dimension ENTITY_SIZE = new Dimension(120, 80);
+	final public static Dimension NET_SIZE = new Dimension(120, 80);
+	final public static Dimension DB_SIZE = new Dimension(120, 80);
 	
 
 }

@@ -4,7 +4,7 @@ public class Channel {
 
 	public synchronized void send(Message v) throws InterruptedException {
 		//ThreadHelper.threadMessage("Wrote message: " + v);
-		Thread.sleep(1000);
+		//Thread.sleep(1000);
 		msg_ = v;
 		notifyAll();
 	}

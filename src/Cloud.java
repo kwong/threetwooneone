@@ -171,8 +171,6 @@ public class Cloud extends JPanel implements Runnable,Identification {
 					
 					
 					Message l_in = leftIn_.listen();
-					//ThreadHelper.threadMessage("Cloud: Listening for ATM messages");
-					//ThreadHelper.threadMessage(""+l_in);
 					switch (l_in.getType()) {
 					
 					/* Event handling with similar behavior to PAT Implementation */
@@ -182,12 +180,7 @@ public class Cloud extends JPanel implements Runnable,Identification {
 					 */
 					case AUTH:
 						ThreadHelper.threadMessage("Received AUTH", getId());
-						/*ThreadHelper.threadMessage("Received AUTH request from ATM", name);
-						Message authMsg = new Message(Message.Type.GETPIN, l_in.user_);
-						ThreadHelper.threadMessage("Requesting PIN from DB", name);
-						ThreadHelper.threadMessage("Sending PIN Request over network", name);
-						lastMsgSentOnRight_ = authMsg; 
-						rightOut_.send(authMsg);	*/
+				
 						currentState = Status.PRE_AUTHED;
 						servedUser = l_in.user_;
 						//System.out.println(servedUser);
@@ -210,10 +203,7 @@ public class Cloud extends JPanel implements Runnable,Identification {
 					 * 	 1. Sending RETRIEVERECORD to DB
 					 */
 					case WITHDRAW:
-						/*ThreadHelper.threadMessage("Received WITHDRAW request from ATM", name);
-						ThreadHelper.threadMessage("Requesting Balance from DB", name);
-						Message withMsg = new Message(Message.Type.RETRIEVERECORD, l_in.user_);
-						*/
+					
 						ThreadHelper.threadMessage("Received WITHDRAW request", getId());
 						cloudBtn.setText("Send DB GETBALANCE");
 						currentState = Status.PRE_WITHDRAW;
@@ -227,8 +217,6 @@ public class Cloud extends JPanel implements Runnable,Identification {
 					 */
 					case TIMEOUT: 
 						ThreadHelper.threadMessage("TIMEOUT", getId());
-						//ThreadHelper.threadMessage("Network Timeout when sending message to ATM", name);
-						//ThreadHelper.threadMessage("Relay Timeout to DB", name);
 						rightOut_.send(l_in); // relay
 						break;
 						
@@ -236,9 +224,6 @@ public class Cloud extends JPanel implements Runnable,Identification {
 					 * 	1. Resending the last sent message
 					 */
 					case FAILURE:
-						//ThreadHelper.threadMessage("Failure -- resending last request :" + lastMsgSentOnLeft_, name);
-						//ThreadHelper.threadMessage("Resending", name);
-						//leftOut_.send(lastMsgSentOnLeft_);
 						ThreadHelper.threadMessage("FAILURE: Resending "+lastMsgSentOnLeft_, getId());
 						currentState = Status.FAILUREFROMLEFT;
 						cloudBtn.setText("Resend: "+lastMsgSentOnLeft_);

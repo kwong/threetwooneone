@@ -132,7 +132,7 @@ public class ATMSystem {
 					// TODO Auto-generated catch block
 					ioe.printStackTrace();
 				}
-				frame.setPreferredSize(new Dimension(numATMs*240, 600));
+				frame.setPreferredSize(new Dimension(100+numATMs*240, 600));
 				frame.setContentPane(mainPane);
 				frame.pack();        //Resizes the window to its natural size.
 			    frame.setVisible(true);

@@ -40,7 +40,7 @@ public class Database extends JPanel implements Runnable {
 
 	private ArrayList<Interface> interfaces = new ArrayList<Interface>();
 	private BitSet readingRecord = new BitSet();
-	private BitSet readingATM = new BitSet();
+	private BitSet[] readingATM ;
 	private final Semaphore mutex = new Semaphore(1, true);
 	
 	private JTable eventTable;
@@ -50,6 +50,10 @@ public class Database extends JPanel implements Runnable {
 	private JScrollPane dbSPane; 
 
 	public Database() throws IOException {
+		readingATM = new BitSet[100];
+		
+		for(BitSet s : readingATM)
+			s = new BitSet();
 		
 		/* Swing */
 		dbLbl = new JLabel("Database");
@@ -90,27 +94,34 @@ public class Database extends JPanel implements Runnable {
 		interfaces.add(new Interface(leftIn, leftOut));
 	}
 	
-	private synchronized void flipBit(int n) {
+	private synchronized void flagRecordAsReading(int n) {
 		readingRecord.flip(n);
 	}
+	
+	/* Ensures that we correctly flag a record as not being read.
+	 * This is done by maintaining a bitarray for each record
+	 * to track the ATMs that are accessing it. As such, we only
+	 * flag a record as not being read if no ATMs are accessing it.
+	 * 
+	 * This is called during SETBALANCE
+	 */
 	private synchronized void safeClear(Message msg) {
 		boolean safe = true;
-		readingATM.clear(msg.atmId_);
-		for(int i=0; i<readingATM.size(); i++) {
-			if (readingATM.get(i) == true) {
+		readingATM[msg.user_].clear(msg.atmId_);
+		for(int i=0; i<readingATM[msg.user_].size(); i++) {
+			if (readingATM[msg.user_].get(i) == true) {
 				safe = false;
 				break;
 			}		
 		}
 		if (safe) {
 			readingRecord.clear(msg.user_);
-		}
-		
-		
-		
+		}		
 	}
 	
 	
+	
+	/* # Column helper */
 	private synchronized String incEventNum() {
 		StringBuilder n = new StringBuilder();
 		return n.append(count ++).toString();
@@ -208,17 +219,47 @@ public class Database extends JPanel implements Runnable {
 					/* When we receive a RETRIEVERECORD request, we can send a RETRIEVERECORDOK 
 					 * (which means, we are sending the record back to cloud) */
 					case GETBALANCE:
+						
+
+						
+						/* Idea: 
+						 * We have a bitarray for each AccountID (readingATM[accountId]), and 
+						 * for each of them, we set the the corresponding atmId's bit to true
+						 * if the atm has done a GETBALANCE. Another bitarray, readingRecord, 
+						 * indicates which record is still being read by an ATM (e.g. 4th bit set 
+						 * means AccountID 4's record is still being READ without being WRITTEN)
+						 * 
+						 * When an ATM does a SETBALANCE, it first sets its corresponding bit in
+						 * readingATM[accountId] to false, indicating that it is no longer reading
+						 * the record. It then checks if other ATMs are doing
+						 * a GETBALANCE by checking each bit in readingATM[accountId]. If there is
+						 * another ATM still at GETBALANCE without doing SETBALANCE, readingRecord[accountId]
+						 * remains as true (indicating some ATM is still doing a GETBALANCE => bad! requires
+						 * us to WARN the user if another ATM with the same AccountID does a GETBALANCE in future), else, 
+						 * if no one else is doing GETBALANCE, we set it to FALSE, which means no one else
+						 * is reading AccountId's balance.
+						 * 
+						 * The semaphore is there to ensure we dont have two threads doing flagRecordAsReading when 
+						 * in fact only one of them should be flagging so the other triggers a warning.
+						 */
+						// Start BAD EVENT detection scheme
 						mutex.acquire();
-						readingATM.set(l_in.atmId_);
-						if (readingRecord.get(l_in.user_) == false) {
-							flipBit(l_in.user_);
+						
+						if (readingATM[l_in.user_] == null)
+							readingATM[l_in.user_] = new BitSet();
+						
+						readingATM[l_in.user_].set(l_in.atmId_);
+						
+						
+						if (readingRecord.get(l_in.user_) == false) { // Check if anyone is reading the record
+							flagRecordAsReading(l_in.user_); // To indicate that we are reading the record
 						} else {
 							
 							info = "Received RETRIEVERECORD <AccountID:"+l_in.user_+"> from Cloud"+idServed;
 							dModel.addRow(new String[]{ incEventNum(), info});
 							ThreadHelper.threadMessage(info, "DB");
 							
-							
+							// WARNING
 							info = "Another user <AccountID:"+ l_in.user_ + "> sending GETBALANCE from ATM"+idServed;
 							dModel.addRow(new String[]{ "!", info});
 							ThreadHelper.threadMessage(info, "DB");
@@ -226,6 +267,7 @@ public class Database extends JPanel implements Runnable {
 							
 						}
 						mutex.release();
+						// end BAD EVENT detection scheme
 						
 						info = "Received GETBALANCE <AccountID:"+l_in.user_+">";
 						dModel.addRow(new String[]{ incEventNum(), info});

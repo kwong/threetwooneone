@@ -13,7 +13,7 @@ public class Config {
 	public static int delay = 1000;
 	
 	
-						/* CONSTANTS */
+	/* CONSTANTS */
 	
 	
 	// Size of Panels

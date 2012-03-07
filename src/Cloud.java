@@ -328,7 +328,7 @@ public class Cloud extends JPanel implements Runnable,Identification {
 	@Override
 	public String getId() {
 		StringBuffer sb = new StringBuffer();
-		for(int i = 0; i< id_+1; i++)
+		//for(int i = 0; i< id_+1; i++)
 		sb.append("Cloud");
 		sb.append(id_);
 		return sb.toString();

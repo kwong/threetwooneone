@@ -102,7 +102,7 @@ public class BadNetwork extends JPanel implements Runnable {
 			}
 		});
 		
-		/* In the even that TIMEOUT occurs */
+		/* In the event that TIMEOUT occurs */
 		netBtnTimeout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
@@ -176,7 +176,6 @@ public class BadNetwork extends JPanel implements Runnable {
 		public void run() {
 
 			try {
-				//ThreadHelper.threadMessage("Network listening from ATM");
 				//simulate(leftIn_, leftOut_, rightIn_, rightOut_);
 				while (true) {
 					transitionLeftMsg= leftIn_.listen();

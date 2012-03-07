@@ -29,7 +29,7 @@ import javax.swing.event.ChangeListener;
 public class ATMSystem {
 
 	
-	private static BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+	//private static BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 	private static int numATMs = 1;
 	private static JFrame frame;
 	private static JPanel mainPane;
@@ -37,7 +37,7 @@ public class ATMSystem {
 	private static ModelConstructor mc;
 	
 	private static void init() {
-		frame = new JFrame("CS3211 Group 5 - ATM Simulation");
+		frame = new JFrame("CS3211 Group 5 - Threaded ATM Simulation");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		frame.setVisible(true);

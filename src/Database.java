@@ -40,6 +40,7 @@ public class Database extends JPanel implements Runnable {
 
 	private ArrayList<Interface> interfaces = new ArrayList<Interface>();
 	private BitSet readingRecord = new BitSet();
+	private BitSet readingATM = new BitSet();
 	private final Semaphore mutex = new Semaphore(1, true);
 	
 	private JTable eventTable;
@@ -92,6 +93,23 @@ public class Database extends JPanel implements Runnable {
 	private synchronized void flipBit(int n) {
 		readingRecord.flip(n);
 	}
+	private synchronized void safeClear(Message msg) {
+		boolean safe = true;
+		readingATM.clear(msg.atmId_);
+		for(int i=0; i<readingATM.size(); i++) {
+			if (readingATM.get(i) == true) {
+				safe = false;
+				break;
+			}		
+		}
+		if (safe) {
+			readingRecord.clear(msg.user_);
+		}
+		
+		
+		
+	}
+	
 	
 	private synchronized String incEventNum() {
 		StringBuilder n = new StringBuilder();
@@ -170,7 +188,8 @@ public class Database extends JPanel implements Runnable {
 						ThreadHelper.threadMessage(info, "DB");
 						
 						Message withOKMsg = new Message(Message.Type.SETBALANCEOK, l_in.user_, idServed);
-						readingRecord.clear(l_in.user_);
+						//readingRecord.clear(l_in.user_);
+						safeClear(l_in);
 						
 						info = "Performed SETBALANCE <AccountID:"+l_in.user_+"> for Cloud"+idServed;
 						dModel.addRow(new String[]{ incEventNum(), info});
@@ -190,6 +209,7 @@ public class Database extends JPanel implements Runnable {
 					 * (which means, we are sending the record back to cloud) */
 					case GETBALANCE:
 						mutex.acquire();
+						readingATM.set(l_in.atmId_);
 						if (readingRecord.get(l_in.user_) == false) {
 							flipBit(l_in.user_);
 						} else {
